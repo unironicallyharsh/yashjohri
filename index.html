@@ -575,6 +575,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
   position:relative;
   padding-left:48px;
   overflow:hidden;
+  touch-action:pan-y;
   cursor:grab;
 }
 .reel-outer[data-cursor]{cursor:grab;}
@@ -987,7 +988,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
       <p class="section-desc">Based in India.<br>Available worldwide.</p>
     </div>
     <div class="about-media reveal">
-      <div class="big"><img src="assets/about/detail.webp" alt="A figure walking past an angular concrete structure lit at night." loading="lazy" decoding="async"></div>
+      <div class="big"><img src="assets/about/detail.webp" alt="A figure walking past an angular concrete structure lit at night."></div>
     </div>
   </div>
 
@@ -1079,7 +1080,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible{
     </div>
 
     <div class="contact-visual reveal">
-      <img src="assets/contact/final.webp" alt="Abstract, hazy monochrome texture." loading="lazy" decoding="async">
+      <img src="assets/contact/final.webp" alt="Abstract, hazy monochrome texture.">
       <span class="crosshair"></span>
     </div>
   </div>
@@ -1213,15 +1214,18 @@ const motionFiles = [
   'AMBI FARMS REEL 2 .mp4',
   'ATK SAREE PORTFOLIO SHOWREEL.mp4', 'CHASING A GHOST.mp4', 'HIMI450 VIDEO INSTA.mp4',
   'Outdoor Jewellery .mp4', 'REEL1_IRA NECKLACES MONTAGE.mp4', 'REEL5_Jain jewellers service montage.mp4',
-  'Waiting Thumbnail.mp4', 'waqa coffee edit { graded }.mp4'
+  'Waiting Thumbnail.mp4', 'waqa coffee edit { graded }.mp4',
+  'Adizero 2.mp4', 'VIDEO MUSIC EVENT REEL.mp4'
 ];
 const motionPosterFiles = [
   'ambi-farms-reel-2.jpg', 'atk-saree-portfolio-showreel.jpg', 'chasing-a-ghost.jpg',
   'himi450-video-insta.jpg', 'outdoor-jewellery.jpg', 'reel1-ira-necklaces-montage.jpg',
-  'reel5-jain-jewellers-service-montage.jpg', 'waiting-thumbnail.jpg', 'waqa-coffee-edit-graded.jpg'
+  'reel5-jain-jewellers-service-montage.jpg', 'waiting-thumbnail.jpg', 'waqa-coffee-edit-graded.jpg',
+  'adizero-2.jpg', 'music-event-reel.jpg'
 ];
+const motionTitles = {'VIDEO MUSIC EVENT REEL.mp4':'MUSIC EVENT REEL'};
 const reels = motionFiles.map((file, index) => ({
-  title:file.replace(/\.mp4$/i,''), duration:'', src:assetPath('assets','motion',file),
+  title:motionTitles[file] || file.replace(/\.mp4$/i,''), duration:'', src:assetPath('assets','motion',file),
   poster:assetPath('assets','video-posters',motionPosterFiles[index])
 }));
 
@@ -1233,22 +1237,6 @@ const capabilities = ["PHOTOGRAPHY","VIDEOGRAPHY","MOTION","VISUAL STORIES","STI
 const tickerTrack = document.getElementById('tickerTrack');
 const tickerHTML = capabilities.map(c => `<span class="ticker-item"><span class="tk-dot"></span>${c}</span>`).join('');
 tickerTrack.innerHTML = `<div class="ticker-content">${tickerHTML}</div><div class="ticker-content" aria-hidden="true">${tickerHTML}</div>`;
-
-const lazyImageObserver = new IntersectionObserver((entries, observer) => {
-  entries.forEach(entry => {
-    if (!entry.isIntersecting) return;
-    const image = entry.target;
-    if (image.dataset.src) {
-      image.src = image.dataset.src;
-      image.removeAttribute('data-src');
-    }
-    observer.unobserve(image);
-  });
-}, { rootMargin:'300px 0px' });
-
-function observeLazyImages(root) {
-  root.querySelectorAll('img[data-src]').forEach(image => lazyImageObserver.observe(image));
-}
 
 /* ============================================================
    RENDER: WORK MEDIA ARCHIVE
@@ -1263,7 +1251,7 @@ function workMediaMarkup(item) {
   const thumbnail = media.type === 'video' ? '' : media.src;
   const video = media.type === 'video' ? `<video class="work-card-video" muted loop playsinline preload="none" data-src="${media.src}"></video>` : '';
   return `<article class="work-card" data-project="${item.project.id}" data-cursor="${media.type === 'video' ? 'play' : 'view'}" tabindex="0" role="button" aria-label="Open ${item.project.title} media">
-    <div class="work-card-media">${thumbnail ? `<img data-src="${thumbnail}" alt="${item.project.title} — media ${item.index + 1}" loading="lazy" decoding="async">` : ''}${video}<span class="work-card-hover-meta">${item.project.title} / ${item.project.year}</span></div>
+    <div class="work-card-media">${thumbnail ? `<img src="${thumbnail}" alt="${item.project.title} — media ${item.index + 1}">` : ''}${video}<span class="work-card-hover-meta">${item.project.title} / ${item.project.year}</span></div>
   </article>`;
 }
 
@@ -1281,7 +1269,6 @@ function bindWorkMedia() {
     card.addEventListener('click', () => openViewer(card.dataset.project));
     card.addEventListener('keypress', event => { if (event.key === 'Enter') openViewer(card.dataset.project); });
   });
-  observeLazyImages(workGrid);
 }
 
 function renderWorkMedia(category, animate) {
@@ -1316,14 +1303,13 @@ renderWorkMedia(activeWorkCategory, false);
 const stillsGrid = document.getElementById('stillsGrid');
 stillsGrid.innerHTML = stills.map(s => `
   <figure class="still-item reveal" data-cursor="view">
-    <img data-src="${s.src}" alt="${s.title}, ${s.year}" loading="lazy" decoding="async">
+    <img src="${s.src}" alt="${s.title}, ${s.year}">
     <figcaption class="still-caption">
       <span class="sc-title">${s.title}</span>
       <span class="sc-num">${s.num} / ${s.year}</span>
     </figcaption>
   </figure>
 `).join('');
-observeLazyImages(stillsGrid);
 if (isFinePointer && !reduceMotion) {
   stillsGrid.querySelectorAll('.still-item').forEach(item => {
     item.addEventListener('mousemove', (e) => {
@@ -1369,8 +1355,8 @@ reelTrack.querySelectorAll('.reel-item').forEach(item => {
 /* motion reel: wheel + drag + arrows with inertia */
 const reelOuter = document.getElementById('reelOuter');
 const reelProgress = document.getElementById('reelProgress');
-let reelX = 0, reelTarget = 0, reelDragging = false, reelStartX = 0, reelStartScroll = 0;
-let reelPointerStart = 0, reelPointerMoved = false, reelSuppressClick = false;
+let reelX = 0, reelTarget = 0, reelDragging = false, reelStartX = 0, reelStartY = 0, reelStartScroll = 0;
+let reelPointerStart = 0, reelPointerMoved = false, reelSuppressClick = false, reelHorizontalGesture = false;
 const reelGesture = document.getElementById('reelGesture');
 
 function reelBounds(){
@@ -1391,32 +1377,44 @@ function setReelX(x, immediate){
   renderReel();
 }
 reelOuter.addEventListener('wheel', (e) => {
-  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-    e.preventDefault();
-    setReelX(reelTarget - e.deltaY);
-  }
+  const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+  if (!delta) return;
+  const max = reelBounds();
+  const next = Math.min(Math.max(reelTarget - delta, -max), 0);
+  if (next === reelTarget) return;
+  e.preventDefault();
+  setReelX(next);
 }, { passive:false });
 
 reelOuter.addEventListener('pointerdown', (e) => {
   reelDragging = true;
   reelPointerMoved = false;
   reelSuppressClick = false;
+  reelHorizontalGesture = false;
   reelOuter.classList.add('dragging');
   reelStartX = e.clientX;
+  reelStartY = e.clientY;
   reelPointerStart = e.clientX;
   reelStartScroll = reelX;
 });
 window.addEventListener('pointermove', (e) => {
   if (!reelDragging) return;
-  if (Math.abs(e.clientX - reelPointerStart) > 6) {
+  const deltaX = e.clientX - reelStartX;
+  const deltaY = e.clientY - reelStartY;
+  if (!reelHorizontalGesture && Math.max(Math.abs(deltaX), Math.abs(deltaY)) > 6) {
+    reelHorizontalGesture = Math.abs(deltaX) > Math.abs(deltaY);
+  }
+  if (reelHorizontalGesture && Math.abs(e.clientX - reelPointerStart) > 6) {
     reelPointerMoved = true;
     reelSuppressClick = true;
     reelGesture.classList.add('hidden');
+    e.preventDefault();
+    setReelX(reelStartScroll + deltaX, true);
+    reelTarget = reelX;
   }
-  setReelX(reelStartScroll + (e.clientX - reelStartX), true);
-  reelTarget = reelX;
-});
-window.addEventListener('pointerup', () => { reelDragging = false; reelOuter.classList.remove('dragging'); });
+}, { passive:false });
+window.addEventListener('pointerup', () => { reelDragging = false; reelHorizontalGesture = false; reelOuter.classList.remove('dragging'); });
+window.addEventListener('pointercancel', () => { reelDragging = false; reelHorizontalGesture = false; reelOuter.classList.remove('dragging'); });
 
 function reelStep(){ return Math.min(380, Math.max(250, reelOuter.clientWidth * .72)); }
 document.getElementById('reelPrev').addEventListener('click', () => setReelX(reelTarget + reelStep()));
@@ -1514,7 +1512,7 @@ function mediaTag(m, index){
   if (m.type === 'video') {
     return `<video data-src="${m.src}" muted loop playsinline preload="none"></video>`;
   }
-  return `<img data-src="${m.src}" alt="" aria-hidden="true" loading="lazy" decoding="async">`;
+  return `<img data-src="${m.src}" alt="" aria-hidden="true" loading="lazy">`;
 }
 
 function loadViewerSlide(index){
@@ -1791,7 +1789,7 @@ document.querySelectorAll('.section').forEach(sec => {
 });
 
 /* hero parallax + load-in */
-window.addEventListener('load', () => {
+document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('hero').classList.add('loaded');
 });
 if (!reduceMotion) {
